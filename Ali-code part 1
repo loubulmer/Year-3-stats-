@@ -1,0 +1,92 @@
+##LB 
+##R stuff for Ali 
+#############
+
+#reset R's brain 
+rm(list=ls())
+
+##only need to do this once to install these packages then #these out
+#remove # to install. You only need todo it once then ~ out
+#install.packages("dplyr",dependencies = TRUE)
+#install.packages("ggplot2",dependencies = TRUE)
+
+##run this every time for any packages you need so they are ready
+library(dplyr)
+library(ggplot2)
+
+#getwd tells me where R is looking
+getwd()
+
+#setwd tells R where to look 
+setwd("C:\\Users\\lbulmer\\Documents\\MSc Ali")
+
+#bring in your data and rename with <-
+Dissertation<-read.csv("Dissertation.csv")
+
+#use some of the following to look at your date and check it's correct
+#this looks at first 6 rows 
+head(Dissertation)
+
+##looks at heading names
+names(Dissertation)
+
+#looks at dimensions of the data set - number of rows and columns
+dim(Dissertation)
+
+#looks at structure of the dataset
+str(Dissertation)
+
+#provides summary stats of data
+summary(Dissertation)
+
+#####some code for different types of plots
+#making a plot - scatterplot 
+##You can change the y (behaviours) and the x(month, location etc)
+ggplot(Dissertation, aes(x = Month, y = GNH_dur))+
+  geom_point()
+
+ggplot(Dissertation, aes(x = Location, y = GNH_dur))+
+  geom_point()
+
+#same plot bu getting rid of the grey using theme 
+ggplot(Dissertation, aes(x = Month, y = GNH_dur))+
+  geom_point() +
+  theme_bw()
+
+#changing the size of the dots
+ggplot(Dissertation, aes(x = Occasion, y = GNH_dur))+
+  geom_point(size = 5) +
+  theme_bw()
+
+#adding x and y labels
+ggplot(Dissertation, aes(x = Location, y = GNH_dur))+
+  geom_point(size = 5) +
+  xlab("Sampling Location") +
+  ylab("Grazing Near Hedge Duration") +
+  theme_bw()
+
+#now let's add colour
+#coloured according to animal, time etc. 
+ggplot(Dissertation, aes(x = Location, y = GNH_dur, colour = Animal))+
+  geom_point(size = 5) +
+  xlab("Sampling Location") +
+  ylab("Grazing Near Hedge Duration") +
+  theme_bw()
+
+ggplot(Dissertation, aes(x = Location, y = GNH_dur, colour = Time))+
+  geom_point(size = 5) +
+  xlab("Sampling Location") +
+  ylab("Grazing Near Hedge Duration") +
+  theme_bw()
+
+ggplot(Dissertation, aes(x = Location, y = GNH_dur, colour = Month))+
+  geom_point(size = 5) +
+  xlab("Sampling Location") +
+  ylab("Grazing Near Hedge Duration") +
+  theme_bw()
+
+##a basic histogram plot
+hist(Dissertation$GNH_dur)
+
+
+
