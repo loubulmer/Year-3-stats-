@@ -1,0 +1,195 @@
+####Ali stats
+
+
+#setup
+# Reset R's brain
+rm(list=ls())
+
+# getwd tells us where R is looking
+getwd()
+
+
+# setwd tells R where to look
+setwd("C:/Users/lbulmer/Documents/MSc Ali")
+
+getwd()
+
+##read csv file and re-name
+dat<- read.csv("Data.csv")
+
+
+
+
+#### so this fixed the error message. its R faffery nonsense, try this and we can see if it works
+##oo <- options(repos = "https://cran.r-project.org/")
+ ##remove # to install packages then # out as you only do once
+##install.packages("Matrix")
+##install.packages("lme4")
+##options(oo)
+##update.packages()
+
+
+#look at data
+head(dat)
+##Tells you what each column is being read as - factor, integer etc
+str(dat)
+
+## wee bit of data tidying needed
+##some are characters so change to factors
+dat$Month<- factor(dat$Month)
+dat$Occasion<- factor(dat$Occasion)
+dat$Time<- factor(dat$Time)
+dat$Location<- factor(dat$Location)
+dat$Animal<- factor(dat$Animal)
+
+str(dat)
+##take a look in a plot
+hist(dat$Proportion_eating_hedge)
+
+##check again to see if the changed columns are now factors
+str(dat)
+
+##take a look at data
+plot(Eating_hedge_dur~ Month, data=dat)
+plot(Eating_hedge_dur~ Occasion, data=dat)
+plot(Eating_hedge_dur~ Time, data=dat)
+boxplot(Eating_hedge_dur~ Per_hedge, data=dat)
+
+
+plot(Proportion_eating_hedge~ Month, data=dat)
+plot(Proportion_eating_hedge~ Occasion, data=dat)
+plot(Proportion_eating_hedge~ Time, data=dat)
+boxplot(Proportion_eating_hedge~ Per_hedge, data=dat)
+
+
+##checking data, any zeros etc
+table(dat$Month, dat$Occasion)
+table(dat$Month, dat$Time)
+table(dat$Time, dat$Occasion)
+table(dat$Per_hedge, dat$Occasion)
+table(dat$Animal, dat$Occasion)
+table(dat$Animal, dat$Per_hedge)
+table(dat$Animal, dat$Time)
+
+
+##first model looking at proportion eating hedge
+##start with full model with all explanatory variables and then work through 
+
+mod1<-glm(Proportion_eating_hedge ~ Per_hedge +Month + Time +
+            Per_hedge:Month + Per_hedge:Time +
+            Month:Time,
+            data=dat, family = quasibinomial) 
+
+##check summary and remove least significant
+summary(mod1)
+##next model with month:time removed
+mod2<-glm(Proportion_eating_hedge ~ Per_hedge +Month + Time +
+            Per_hedge:Month + Per_hedge:Time,
+            data=dat, family = quasibinomial)
+##use this to compare models
+anova(mod1, mod2, test='F')
+##model 1 is not sig better than model 2 
+
+##check mod2 to see which variable to remove next
+summary(mod2)
+
+##remove hedge:time
+mod3<-glm(Proportion_eating_hedge ~ Per_hedge +Month + Time +
+            Per_hedge:Month,
+          data=dat, family = quasibinomial)
+
+##check models
+anova(mod2, mod3, test='F')
+#mod2 is not sig better than mod3
+
+#check mod3 to see which variable to remove next
+summary(mod3)
+
+##time least sig so remove and run again
+mod4<-glm(Proportion_eating_hedge ~ Per_hedge +Month +
+            Per_hedge:Month,
+          data=dat, family = quasibinomial)
+
+##check
+anova(mod3, mod4, test='F')
+##mod3 is not sig better 
+##look at mod4 to see which variable to remove next
+summary(mod4)
+
+##remove hedge:month interaction
+mod5<-glm(Proportion_eating_hedge ~ Per_hedge +Month,
+          data=dat, family = quasibinomial)
+
+##compare models
+anova(mod4, mod5, test='F')
+##mod 4 is not sig better than mod5
+
+##check summary for next step
+summary(mod5)
+
+##remove month
+mod6<-glm(Proportion_eating_hedge ~ Per_hedge,
+          data=dat, family = quasibinomial)
+
+##check
+anova(mod5, mod6, test='F')
+##mod5 is not sig better than mod6
+
+##check
+summary(mod6)
+
+##check with just month
+mod7<-glm(Proportion_eating_hedge ~ Month,
+          data=dat, family = quasibinomial)
+
+#compare models
+anova(mod5, mod7, test='F')
+
+
+summary(mod7)
+
+
+##cehck both against a null model
+
+anova(mod6, test='F')
+anova(mod7, test='F')
+##not sig
+
+###################### mixed effects models
+##similar stating point but with animal as random effect
+
+library('lme4')
+##start with full model
+mm1<- glmer(Proportion_eating_hedge ~ Month + Time +
+            Month:Time + (1|Animal),
+          data=dat, family = binomial)
+
+summary(mm1)
+##remove month:time interaction first
+mm2<- glmer(Proportion_eating_hedge ~ Month + Time +
+             (1|Animal),
+            data=dat, family = binomial)
+AIC(mm1, mm2)
+summary(mm2)
+##take out time and run again
+mm3<- glmer(Proportion_eating_hedge ~ Month + 
+              (1|Animal),
+            data=dat, family = binomial)
+AIC(mm2, mm3)
+summary(mm3)
+
+##swop month for time and try again
+mm4<- glmer(Proportion_eating_hedge ~ Time + 
+              (1|Animal),
+            data=dat, family = binomial)
+AIC(mm2, mm4)
+summary(mm4)
+
+##run a null model 
+mm.NULL<- glmer(Proportion_eating_hedge ~ 1 + 
+                  (1|Animal),
+                data=dat, family = binomial)
+
+AIC(mm3, mm.NULL)
+AIC(mm4, mm.NULL)
+
