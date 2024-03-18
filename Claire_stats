@@ -1,0 +1,71 @@
+####Claire P stats
+
+
+#setup
+# Reset R's brain
+rm(list=ls())
+
+# getwd tells us where R is looking
+getwd()
+
+
+# setwd tells R where to look
+setwd("C:/Users/lbulmer/OneDrive - SRUC/I-Migrated/BSc stuff/Honours projects/ClaireP")
+
+getwd()
+
+#read mcsv and rename
+dat<- read.csv("score_data.csv")
+
+
+#### so this fixed the error meassage. its R faffery nonsence, try this and we can see if it works
+#oo <- options(repos = "https://cran.r-project.org/")
+ #install.packages("Matrix")
+ #install.packages("lme4")
+#  options(oo)
+#  update.packages()
+
+
+library('lme4')
+
+
+head(dat)
+str(dat)
+
+
+## wee bit of data tidying
+dat$session<- as.factor(dat$session)
+dat$people<- as.factor(dat$people)
+dat$horse<- as.factor(dat$horse)
+#check it again
+str(dat)
+
+##divide scores by 5 so you have proportion
+dat$prop_score<- dat$score/5
+
+##run model
+mod1<-glmer(prop_score ~ session +
+              (1|people), data=dat, family =binomial) 
+
+summary(mod1)
+                
+modnull<-glmer(prop_score ~ 1 +
+              (1|people), data=dat, family =binomial )  
+
+AIC(mod1,modnull)
+#modnull has lower AIC so this is the best model
+##ns diff. 
+summary(mod1)
+
+plot(dat$session,dat$score)
+
+
+table(dat$score, dat$session)
+
+#diff changed back 
+exp(0.9)/(1+exp(0.9))
+##0.7*5=3.5
+
+#intercept diff
+exp(1.1)/(1+exp(1.1))
+0.75*5 = 3.75
